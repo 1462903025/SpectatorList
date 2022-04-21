@@ -1,49 +1,63 @@
-﻿using Exiled.API.Features;
-using Exiled.Events.EventArgs;
-using MEC;
-using NorthwoodLib.Pools;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// -----------------------------------------------------------------------
+// <copyright file="EventHandlers.cs" company="Build">
+// Copyright (c) Build. All rights reserved.
+// Licensed under the CC BY-SA 3.0 license.
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace SpectatorList
 {
+    using System.Collections.Generic;
+    using System.Text;
+    using Exiled.API.Features;
+    using Exiled.Events.EventArgs;
+    using MEC;
+    using NorthwoodLib.Pools;
+
+    /// <summary>
+    /// Handles events derived from <see cref="Exiled.Events.Handlers"/>.
+    /// </summary>
     public class EventHandlers
     {
         private readonly Plugin plugin;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EventHandlers"/> class.
+        /// </summary>
+        /// <param name="plugin">An instance of the <see cref="Plugin"/> class.</param>
         public EventHandlers(Plugin plugin) => this.plugin = plugin;
 
+        /// <inheritdoc cref="Exiled.Events.Handlers.Player.OnVerified(VerifiedEventArgs)"/>
         public void OnVerified(VerifiedEventArgs ev)
         {
-            Timing.RunCoroutine(SpectatorList(ev.Player));
+            Timing.RunCoroutine(SpectatorList(ev.Player).CancelWith(ev.Player.GameObject));
         }
 
-        public IEnumerator<float> SpectatorList(Player player)
+        private IEnumerator<float> SpectatorList(Player player)
         {
-            yield return Timing.WaitForSeconds(1);
             while (true)
             {
-                yield return Timing.WaitForSeconds(1);
+                yield return Timing.WaitForSeconds(1f);
+                if (player.IsDead)
+                    continue;
 
-                yield return Timing.WaitUntilTrue(() => player.IsAlive);
-                StringBuilder list = StringBuilderPool.Shared.Rent();
                 int count = 0;
-
-                if (player.CurrentSpectatingPlayers.Count() > 1)
+                StringBuilder spectatorListBuilder = StringBuilderPool.Shared.Rent();
+                foreach (Player spectator in player.CurrentSpectatingPlayers)
                 {
-                    list.Append($"<align=right><size=45%><color={player.Role.Color.ToHex()}><b>👥 Spectators ((COUNT)):</b>");
-                    foreach (Player splayer in player.CurrentSpectatingPlayers)
-                    {
-                        if (splayer != player && ((splayer.IsOverwatchEnabled && !plugin.Config.IgnoreOverwatch) || (splayer.IsNorthwoodStaff && !plugin.Config.IgnoreNorthwood) || !splayer.IsGlobalModerator))
-                        {
-                            list.Append($"\n{splayer.Nickname}");
-                            count++;
-                        }
-                    }
-                    list.Append("</color></size></align>");
+                    if (spectator == player ||
+                        spectator.IsGlobalModerator ||
+                        (spectator.IsOverwatchEnabled && plugin.Config.IgnoreOverwatch) ||
+                        (spectator.IsNorthwoodStaff && plugin.Config.IgnoreNorthwood))
+                        continue;
 
-                    player.ShowHint(list.ToString().Replace("(COUNT)", $"{count}"), 1.2f);
+                    spectatorListBuilder.Append("\n").Append(spectator.Nickname);
+                    count++;
                 }
+
+                string spectatorList = StringBuilderPool.Shared.ToStringReturn(spectatorListBuilder);
+                if (count > 0)
+                    player.ShowHint(string.Format(plugin.Config.Message, player.Role.Color.ToHex(), count, spectatorList), 1.2f);
             }
         }
     }

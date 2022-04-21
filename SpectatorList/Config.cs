@@ -1,17 +1,37 @@
-﻿using Exiled.API.Interfaces;
-using System.ComponentModel;
+﻿// -----------------------------------------------------------------------
+// <copyright file="Config.cs" company="Build">
+// Copyright (c) Build. All rights reserved.
+// Licensed under the CC BY-SA 3.0 license.
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace SpectatorList
 {
-    public sealed class Config : IConfig
+    using System.ComponentModel;
+    using Exiled.API.Interfaces;
+
+    /// <inheritdoc />
+    public class Config : IConfig
     {
-        [Description("Whether or not the plugin is enabled on this server.")]
+        /// <inheritdoc />
         public bool IsEnabled { get; set; } = true;
 
-        [Description("Whether or not people with Overwatch enable should be Ignored.")]
+        /// <summary>
+        /// Gets or sets the message to display to players that are being spectated.
+        /// </summary>
+        [Description("The message to display to players that are being spectated.")]
+        public string Message { get; set; } = "<align=right><size=45%><color={0}><b>👥 Spectators ({1}):</b>{2}</color></size></align>";
+
+        /// <summary>
+        /// Gets or sets a value indicating whether players spectating with overwatch should be ignored from the spectator list.
+        /// </summary>
+        [Description("Whether players spectating with overwatch should be ignored from the spectator list.")]
         public bool IgnoreOverwatch { get; set; } = true;
 
-        [Description("Whether or not Northwood Staff should be Ignored. (Global Moderators will ALWAYS be Ignored)")]
+        /// <summary>
+        /// Gets or sets a value indicating whether spectating northwood staff should be ignored from the spectator list.
+        /// </summary>
+        [Description("Whether spectating northwood staff should be ignored from the spectator list.")]
         public bool IgnoreNorthwood { get; set; } = false;
     }
 }
