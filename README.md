@@ -1,5 +1,5 @@
 # SpectatorList
-![downloads](https://img.shields.io/github/downloads/TTypiarz/SpectatorList/total?style=for-the-badge)
+![downloads](https://img.shields.io/github/downloads/1462903025/SpectatorList/total?style=for-the-badge)
 
 This Plugin allows you to see who is currently Spectating you and watching your every move.
 This is my first public plugin so don't blame me If I have skill issue - Feedback appreciated
